@@ -11,8 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import os
-import sys
+# import os
+# import sys
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -172,10 +172,8 @@ htmlhelp_basename = 'project_templatedoc'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     # 'preamble': '',
 }
@@ -183,10 +181,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index',
-     'project_template.tex',
-     u'project_template Documentation',
-     u"ds-hub-sochi", 'manual'),
+    ('index', 'project_template.tex', u'project_template Documentation', u'ds-hub-sochi', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -214,10 +209,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'project_template', u'project_template Documentation',
-     [u"ds-hub-sochi"], 1)
-]
+man_pages = [('index', 'project_template', u'project_template Documentation', [u'ds-hub-sochi'], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -229,9 +221,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'project_template', u'project_template Documentation',
-     u"ds-hub-sochi", 'project_template',
-     'This repository is a template structure for new projects', 'Miscellaneous'),
+    (
+        'index',
+        'project_template',
+        u'project_template Documentation',
+        u'ds-hub-sochi',
+        'project_template',
+        'This repository is a template structure for new projects',
+        'Miscellaneous',
+    ),
 ]
 
 # Documents to append as an appendix to all manuals.
