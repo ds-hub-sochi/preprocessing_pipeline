@@ -1,4 +1,5 @@
 import pathlib
+import typing
 from dataclasses import dataclass
 from io import BytesIO
 from urllib.parse import quote
@@ -32,19 +33,19 @@ class Config:
     tagme: _Tagme
     cloud: _S3
 
-    def __post_init__(self):
-        self.tagme = _Tagme(**self.tagme)
-        self.cloud = _S3(**self.cloud['main'])
+    def __init__(self, config_yaml):
+        self.tagme = _Tagme(**config_yaml['tagme'])
+        self.cloud = _S3(**config_yaml['cloud']['main'])
 
 
 class S3ImagesCollector:
-    def __init__(self, path_to_crowd_cfg: str | pathlib.Path):
+    def __init__(self, path_to_crowd_cfg: typing.Union[str, pathlib.Path]):
         self._s3_client_sdk = Clouds(str(path_to_crowd_cfg)).get('main')
 
         with open(path_to_crowd_cfg, 'r', encoding='utf-8') as config_path:
             crowd_cfg = yaml.safe_load(config_path)
 
-        self._config: Config = Config(**crowd_cfg)
+        self._config: Config = Config(crowd_cfg)
 
         self._s3_client_boto: boto3.client = boto3.client(
             's3',
