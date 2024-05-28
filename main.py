@@ -1,10 +1,8 @@
-import streamlit as st
 import os
 
+import streamlit as st
+
 from src.preprocessing_pipeline.s3_collectors.image_collector import S3ImagesCollector
-
-
-crowd_cfg_path: str = ''
 
 
 def get_style() -> str:
@@ -21,6 +19,8 @@ def get_style() -> str:
 def main():
     st.markdown(get_style(), unsafe_allow_html=True)
 
+    crowd_cfg_path: str = ''
+
     tab1, tab2 = st.tabs(['Конфигурация проекта', 'Выгрузка изображений из S3'])
     with tab1:
         st.header('Конфигурация проекта')
@@ -30,7 +30,6 @@ def main():
         )
 
         if crowd_cfg_path_candidate != '':
-            global crowd_cfg_path
             crowd_cfg_path = os.path.abspath(crowd_cfg_path_candidate)
 
     with tab2:
