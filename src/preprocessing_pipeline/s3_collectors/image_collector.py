@@ -39,9 +39,9 @@ class Config:
 
 class S3ImagesCollector:
     def __init__(self, path_to_crowd_cfg: str | pathlib.Path):
-        self._s3_client_sdk = Clouds(path_to_crowd_cfg).get('main')
+        self._s3_client_sdk = Clouds(str(path_to_crowd_cfg)).get('main')
 
-        with open(path_to_crowd_cfg, 'r') as config_path:
+        with open(path_to_crowd_cfg, 'r', encoding='utf-8') as config_path:
             crowd_cfg = yaml.safe_load(config_path)
 
         self._config: Config = Config(**crowd_cfg)
@@ -105,7 +105,7 @@ class S3ImagesCollector:
                 ExpiresIn=3600,
             )
 
-            response = requests.get(url)
+            response = requests.get(url, timeout=60)
             img = np.asarray(Image.open(BytesIO(response.content)))
 
             image_and_filename_dct['Image'].append(img)

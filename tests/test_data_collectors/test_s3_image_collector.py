@@ -76,12 +76,12 @@ def test_nested_structure_dir_get_image_and_name(bucket_name: str, folder_name: 
     answer_images: list[str] = glob.glob(str(cwd.joinpath('dumps/image_and_name/nested/**/*.JPG')), recursive=True)
     answer_images = sorted(answer_images)
 
-    for i in range(len(answer_images)):
-        image: np.ndarray = np.asarray(Image.open(answer_images[i]))
-        filename: str = '/'.join(answer_images[i].replace('\\', '/').split('/')[-2:])
+    for index, filename in enumerate(answer_images):
+        image: np.ndarray = np.asarray(Image.open(filename))
+        filename: str = '/'.join(answer_images[index].replace('\\', '/').split('/')[-2:])
 
-        assert np.allclose(images_and_names[i][0], image)
-        assert images_and_names[i][1] == filename
+        assert np.allclose(images_and_names[index][0], image)
+        assert images_and_names[index][1] == filename
 
 
 test_data = (
@@ -105,13 +105,13 @@ def test_flat_structure_dir_get_image_and_name(bucket_name: str, folder_name: st
     answer_images: list[str] = glob.glob(str(cwd.joinpath('dumps/image_and_name/flat/**/*.JPG')), recursive=True)
     answer_images = sorted(answer_images)
 
-    for i in range(len(answer_images)):
-        image_answer = np.asarray(Image.open(answer_images[i]))
+    for index, filename in enumerate(answer_images):
+        image_answer = np.asarray(Image.open(filename))
 
-        images_from_s3_np: np.ndarray = images_and_names[i][0]
+        images_from_s3_np: np.ndarray = images_and_names[index][0]
 
-        filename: str = answer_images[i].replace('\\', '/').split('/')[-1]
+        filename: str = answer_images[index].replace('\\', '/').split('/')[-1]
 
         assert images_from_s3_np.shape == image_answer.shape
         assert np.allclose(images_from_s3_np, image_answer)
-        assert images_and_names[i][1] == filename
+        assert images_and_names[index][1] == filename
