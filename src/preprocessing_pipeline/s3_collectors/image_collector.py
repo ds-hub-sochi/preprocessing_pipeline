@@ -154,4 +154,4 @@ class S3ImagesCollector:
             else:
                 pathlib.Path(f'{dump_folder_name}').mkdir(parents=True, exist_ok=True)
 
-            _ = Image.fromarray(img).save(pathlib.Path(f'{dump_folder_name}').joinpath(file_name))
+            Image.fromarray(img).save(pathlib.Path(f'{dump_folder_name}').joinpath(file_name))
