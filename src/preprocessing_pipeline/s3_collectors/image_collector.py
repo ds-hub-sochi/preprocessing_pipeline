@@ -128,7 +128,7 @@ class S3ImagesCollector:
         s3_bucket_name: str,
         s3_folder_name: str,
         dump_folder_name: str,
-    ):
+    ) -> None:
         url_and_filename_df: pd.DataFrame = self.get_url_and_name(s3_folder_name, s3_bucket_name)
 
         for index in range(url_and_filename_df.shape[0]):
