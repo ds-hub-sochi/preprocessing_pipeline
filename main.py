@@ -55,8 +55,8 @@ def main():
         )
 
         if operation_type == 'Загрузка сразу в Tagme':
-            # TBA
-            pass
+            if st.button('Отправить в TAGME'):
+                print('TBA')
         elif operation_type == 'Локальное сохранение':
             defaut_input_value: str = 'Абсолютный или относительный путь до директории'
 
@@ -67,14 +67,15 @@ def main():
             )
 
             if dump_dir != defaut_input_value:
-                dump_dir = os.path.abspath(dump_dir)
-                collector: S3ImagesCollector = S3ImagesCollector(crowd_cfg_path)
+                if st.button('Забрать изображения'):
+                    dump_dir = os.path.abspath(dump_dir)
+                    collector: S3ImagesCollector = S3ImagesCollector(crowd_cfg_path)
 
-                collector.get_and_save_images(
-                    s3_folder_name=data_dir,
-                    s3_bucket_name=bucket,
-                    dump_folder_name=dump_dir,
-                )
+                    collector.get_and_save_images(
+                        s3_folder_name=data_dir,
+                        s3_bucket_name=bucket,
+                        dump_folder_name=dump_dir,
+                    )
 
 
 if __name__ == '__main__':
