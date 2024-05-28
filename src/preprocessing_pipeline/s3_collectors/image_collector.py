@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import pathlib
-import typing
 from dataclasses import dataclass
 from io import BytesIO
 from urllib.parse import quote
@@ -39,7 +40,7 @@ class Config:
 
 
 class S3ImagesCollector:
-    def __init__(self, path_to_crowd_cfg: typing.Union[str, pathlib.Path]):
+    def __init__(self, path_to_crowd_cfg: str | pathlib.Path):
         self._s3_client_sdk = Clouds(str(path_to_crowd_cfg)).get('main')
 
         with open(path_to_crowd_cfg, 'r', encoding='utf-8') as config_path:
