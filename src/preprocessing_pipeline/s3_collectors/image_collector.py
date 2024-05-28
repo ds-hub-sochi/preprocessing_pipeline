@@ -122,3 +122,36 @@ class S3ImagesCollector:
             image_and_filename_lst.append((image, filename))
 
         return image_and_filename_lst
+
+    def get_and_save_images(
+        self,
+        s3_bucket_name: str,
+        s3_folder_name: str,
+        dump_folder_name: str,
+    ):
+        url_and_filename_df: pd.DataFrame = self.get_url_and_name(s3_folder_name, s3_bucket_name)
+
+        for index in range(url_and_filename_df.shape[0]):
+            current_row: pd.Series = url_and_filename_df.loc[index]
+
+            url = self._s3_client_boto.generate_presigned_url(
+                'get_object',
+                Params={
+                    'Bucket': s3_bucket_name,
+                    'Key': current_row['Full_path'],
+                },
+                ExpiresIn=3600,
+            )
+
+            response = requests.get(url, timeout=60)
+
+            img: np.ndarray = np.asarray(Image.open(BytesIO(response.content)))
+            file_name: str = current_row['FILENAME']
+
+            if '/' in file_name:
+                file_name_dir: str = '/'.join(file_name.split('/')[:-1])
+                pathlib.Path(f'{dump_folder_name}').joinpath(f'{file_name_dir}').mkdir(parents=True, exist_ok=True)
+            else:
+                pathlib.Path(f'{dump_folder_name}').mkdir(parents=True, exist_ok=True)
+
+            _ = Image.fromarray(img).save(pathlib.Path(f'{dump_folder_name}').joinpath(file_name))

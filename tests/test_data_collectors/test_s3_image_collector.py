@@ -1,5 +1,7 @@
 import glob
+import os
 import pathlib
+import shutil
 
 import numpy as np
 import pandas as pd
@@ -115,3 +117,65 @@ def test_flat_structure_dir_get_image_and_name(bucket_name: str, folder_name: st
         assert images_from_s3_np.shape == image_answer.shape
         assert np.allclose(images_from_s3_np, image_answer)
         assert images_and_names[index][1] == filename
+
+
+test_data = (
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_nested/'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_nested'),
+)
+
+
+@pytest.mark.parametrize('bucket_name,folder_name', test_data)
+def test_nested_structure_dir_get_and_save_images(bucket_name: str, folder_name: str):
+    img_collector: image_collector.S3ImagesCollector = image_collector.S3ImagesCollector(
+        cwd.joinpath('crowd_dump.cfg'),
+    )
+
+    dump_dir: pathlib.Path = cwd.joinpath('test_dump')
+
+    img_collector.get_and_save_images(
+        s3_folder_name=folder_name,
+        s3_bucket_name=bucket_name,
+        dump_folder_name=dump_dir,
+    )
+
+    images_and_names: list[tuple[np.ndarray, str]] = img_collector.get_image_and_name(
+        folder_name=folder_name,
+        bucket_name=bucket_name,
+    )
+
+    for _, name in images_and_names:
+        assert os.path.isfile(dump_dir.joinpath(name))
+
+    shutil.rmtree(dump_dir)
+
+
+test_data = (
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_flat/'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_flat'),
+)
+
+
+@pytest.mark.parametrize('bucket_name,folder_name', test_data)
+def test_flat_structure_dir_get_and_save_images(bucket_name: str, folder_name: str):
+    img_collector: image_collector.S3ImagesCollector = image_collector.S3ImagesCollector(
+        cwd.joinpath('crowd_dump.cfg'),
+    )
+
+    dump_dir: pathlib.Path = cwd.joinpath('test_dump')
+
+    img_collector.get_and_save_images(
+        s3_folder_name=folder_name,
+        s3_bucket_name=bucket_name,
+        dump_folder_name=dump_dir,
+    )
+
+    images_and_names: list[tuple[np.ndarray, str]] = img_collector.get_image_and_name(
+        folder_name=folder_name,
+        bucket_name=bucket_name,
+    )
+
+    for _, name in images_and_names:
+        assert os.path.isfile(dump_dir.joinpath(name))
+
+    shutil.rmtree(dump_dir)
