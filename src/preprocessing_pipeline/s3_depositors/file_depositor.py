@@ -63,7 +63,7 @@ class S3FileDepositor:
             Key=(s3_folder_name),
         )
 
-        filename: str = str(filepath).split('/')[-1]
+        filename: str = str(filepath).rsplit('/', maxsplit=1)[-1]
 
         s3_resource: boto3.resource = boto3.resource(
             's3',

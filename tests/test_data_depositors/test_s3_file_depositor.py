@@ -32,7 +32,7 @@ def test_one_file_deposit(s3_bucket_name: str, s3_folder_name: str, filepath: st
         folder_name=s3_folder_name,
     )
 
-    filename: str = filepath.split('/')[-1]
+    filename: str = filepath.rsplit('/', maxsplit=1)[-1]
 
     depositor.delete_file(
         s3_bucket_name=s3_bucket_name,
@@ -68,7 +68,7 @@ def test_one_file_deposit_into_existing_folder(s3_bucket_name: str, s3_folder_na
 
     assert files.shape[0] == 2
 
-    filename: str = filepath.split('/')[-1]
+    filename: str = filepath.rsplit('/', maxsplit=1)[-1]
 
     depositor.delete_file(
         s3_bucket_name=s3_bucket_name,
