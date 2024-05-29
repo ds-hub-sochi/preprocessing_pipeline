@@ -9,8 +9,8 @@ from src.preprocessing_pipeline.s3_depositors import file_depositor
 cwd: pathlib.Path = pathlib.Path(__file__).parent.resolve()
 
 test_data = (
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_deposit/', 'dumps/test1.txt'),
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_deposit', 'dumps/test1.txt'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/depositor/', 'dumps/test1.txt'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/depositor', 'dumps/test1.txt'),
 )
 
 
@@ -43,8 +43,8 @@ def test_one_file_deposit(s3_bucket_name: str, s3_folder_name: str, filepath: st
 
 
 test_data = (
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_deposit_with_existing_file/', 'dumps/test1.txt'),
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_deposit_with_existing_file', 'dumps/test1.txt'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/depositor/with_existing_file/', 'dumps/test1.txt'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/depositor/with_existing_file', 'dumps/test1.txt'),
 )
 
 
