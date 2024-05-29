@@ -1,11 +1,17 @@
 # local package
 -e .
 awscli
+boto3
 
 # external requirements
 click
 coverage
+crowd_sdk-3.12.1.post3-py3-none-any.whl
 flake8
+numpy
+Pillow
 pre-commit==3.0.4
+pytest
 python-dotenv>=0.5.1
 Sphinx
+streamlit
