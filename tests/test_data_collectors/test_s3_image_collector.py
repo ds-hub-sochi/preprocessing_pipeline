@@ -14,8 +14,8 @@ cwd: pathlib.Path = pathlib.Path(__file__).parent.resolve()
 
 
 test_data = (
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_nested/'),
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_nested'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/nested/'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/nested'),
 )
 
 
@@ -30,14 +30,14 @@ def test_nested_structure_dir_get_url_and_name(bucket_name: str, folder_name: st
         bucket_name=bucket_name,
     )
 
-    answer: pd.DataFrame = pd.read_csv(cwd.joinpath(f'./dumps/url_and_name/{folder_name.rstrip("/")}.csv'))
+    answer: pd.DataFrame = pd.read_csv(cwd.joinpath('./dumps/url_and_name/nested.csv'))
 
     assert urls_and_names.equals(answer)
 
 
 test_data = (
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_flat/'),
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_flat'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/flat/'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/flat'),
 )
 
 
@@ -52,14 +52,16 @@ def test_flat_structure_dir_get_url_and_name(bucket_name: str, folder_name: str)
         bucket_name=bucket_name,
     )
 
-    answer: pd.DataFrame = pd.read_csv(cwd.joinpath(f'./dumps/url_and_name/{folder_name.rstrip("/")}.csv'))
+    print(urls_and_names)
+
+    answer: pd.DataFrame = pd.read_csv(cwd.joinpath('./dumps/url_and_name/flat.csv'))
 
     assert urls_and_names.equals(answer)
 
 
 test_data = (
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_nested/'),
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_nested'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/nested/'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/nested'),
 )
 
 
@@ -87,8 +89,8 @@ def test_nested_structure_dir_get_image_and_name(bucket_name: str, folder_name: 
 
 
 test_data = (
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_flat/'),
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_flat'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/flat/'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/flat'),
 )
 
 
@@ -120,8 +122,8 @@ def test_flat_structure_dir_get_image_and_name(bucket_name: str, folder_name: st
 
 
 test_data = (
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_nested/'),
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_nested'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/nested/'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/nested'),
 )
 
 
@@ -151,8 +153,8 @@ def test_nested_structure_dir_get_and_save_images(bucket_name: str, folder_name:
 
 
 test_data = (
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_flat/'),
-    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir_flat'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/flat/'),
+    ('b-ws-faq3m-mp1', 'preprocessing_pipeline_test_dir/collector/flat'),
 )
 
 

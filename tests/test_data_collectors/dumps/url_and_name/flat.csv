@@ -1,0 +1,5 @@
+INPUT:image,FILENAME,Full_path
+https://n-ws-faq3m.s3pd12.sbercloud.ru/b-ws-faq3m-mp1/preprocessing_pipeline_test_dir/collector/flat/F25A_IMAG0216.JPG,F25A_IMAG0216.JPG,preprocessing_pipeline_test_dir/collector/flat/F25A_IMAG0216.JPG
+https://n-ws-faq3m.s3pd12.sbercloud.ru/b-ws-faq3m-mp1/preprocessing_pipeline_test_dir/collector/flat/F25A_IMAG0218.JPG,F25A_IMAG0218.JPG,preprocessing_pipeline_test_dir/collector/flat/F25A_IMAG0218.JPG
+https://n-ws-faq3m.s3pd12.sbercloud.ru/b-ws-faq3m-mp1/preprocessing_pipeline_test_dir/collector/flat/F25B_IMAG0091.JPG,F25B_IMAG0091.JPG,preprocessing_pipeline_test_dir/collector/flat/F25B_IMAG0091.JPG
+https://n-ws-faq3m.s3pd12.sbercloud.ru/b-ws-faq3m-mp1/preprocessing_pipeline_test_dir/collector/flat/F25B_IMAG0092.JPG,F25B_IMAG0092.JPG,preprocessing_pipeline_test_dir/collector/flat/F25B_IMAG0092.JPG
