@@ -6,7 +6,7 @@ boto3
 # external requirements
 click
 coverage
-crowd_sdk-3.12.1.post3-py3-none-any.whl
+crowd_sdk-3.11.0.post18-py3-none-any.whl
 flake8
 numpy
 Pillow
