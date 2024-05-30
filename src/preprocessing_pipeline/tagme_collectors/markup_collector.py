@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pathlib
-from typing import List
 
 from crowd_sdk.tagme import TagmeClientAdvanced
 from crowd_sdk.tagme.cli.download_task_results import download_task_table
@@ -12,7 +11,7 @@ class MarkupCollector:
     def __init__(self, config_path: str):
         self._tagme_client: TagmeClientAdvanced = TagmeClientAdvanced(config_path)
 
-    def _get_task(self, task_id: str, tasks: List[TaskData]) -> TaskData:
+    def _get_task(self, task_id: str, tasks: list[TaskData]) -> TaskData:
         for task in tasks:
             if task.uid == task_id:
                 return task
