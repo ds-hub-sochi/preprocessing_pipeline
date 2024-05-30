@@ -1,9 +1,15 @@
-import os
+from __future__ import annotations
 
+import os
+from typing import Tuple
+
+import asyncio
+import pathlib
 import streamlit as st
 
 from src.preprocessing_pipeline.s3_collectors.image_collector import S3ImagesCollector
 from src.preprocessing_pipeline.s3_depositors.file_depositor import S3FileDepositor
+from src.preprocessing_pipeline.tagme_collectors.markup_collector import MarkupCollector
 
 
 def get_style() -> str:
@@ -22,7 +28,15 @@ def main():
 
     crowd_cfg_path: str = ''
 
-    tab1, tab2, tab3 = st.tabs(['Конфигурация проекта', 'Выгрузка изображений из S3', 'Отправление в S3'])
+    tab1, tab2, tab3, tab4 = st.tabs(
+        [
+            'Конфигурация проекта',
+            'Выгрузка изображений из S3',
+            'Отправление в S3',
+            'Забрать разметку из TagMe',
+        ],
+    )
+
     with tab1:
         st.header('Конфигурация проекта')
 
@@ -101,6 +115,42 @@ def main():
                     s3_folder_name=s3_dump_dir,
                     filepath=filepath,
                 )
+
+    with tab4:
+        organization_id: str = st.text_input(
+            label='id орзанизации',
+        )
+
+        project_id: str = st.text_input(
+            label='id проекта',
+        )
+
+        task_id: str = st.text_input(
+            label='id задания',
+        )
+
+        dump_dir: str = st.text_input(
+            label='Абсолютный или относительный* путь до директории для скачивания',
+            help='Относительно той директории, откуда запущен скрипт',
+        )
+
+        if organization_id != '' and project_id != '' and task_id != '' and dump_dir != '':
+            dump_dir = os.path.abspath(dump_dir)
+            pathlib.Path(dump_dir).mkdir(parents=True, exist_ok=True)
+
+            if st.button('Получить разметку'):
+                murkup_collector: MarkupCollector = MarkupCollector(crowd_cfg_path)
+
+                results_str: str | Tuple[str, str] = asyncio.run(
+                    murkup_collector.get_task_markup(
+                        organization_id=organization_id,
+                        project_id=project_id,
+                        task_id=task_id,
+                        dump_dir=dump_dir,
+                    ),
+                )
+
+                st.write(results_str)
 
 
 if __name__ == '__main__':
