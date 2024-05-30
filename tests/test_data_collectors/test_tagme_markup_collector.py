@@ -38,7 +38,8 @@ def test_get_markup_from_finished_task(organization_id: str, project_id: str, ta
         ),
     )
 
-    assert result_str == f'Разметка сохранена в {pathlib.Path(dump_dir).joinpath("Детекция_тигров_part15.json")}'
+    dump_path: str = pathlib.Path(dump_dir).joinpath('Детекция_тигров_part15.json')
+    assert result_str == f'Разметка завершена.\n\nРазметка сохранена в {dump_path}'
     assert os.path.isfile(f'{pathlib.Path(dump_dir).joinpath("Детекция_тигров_part15.json")}')
 
     shutil.rmtree(dump_dir)

@@ -34,14 +34,16 @@ class MarkupCollector:
                 got_current_task = True
                 break
 
+        result_str: str = ''
+
         if not got_current_task:
-            return 'Не получилось найти задание с таким id', ''
+            result_str = 'Не получилось найти задание с таким id'
+
+            return result_str
 
         task = self._get_task(task_id, tasks)
 
         task_stats = await self._tagme_client.get_task_stats(task_id, organization_id)
-
-        result_str: str = ''
 
         marked_count: int = task_stats.marked_count
         objects_count: int = task_stats.objects_count
