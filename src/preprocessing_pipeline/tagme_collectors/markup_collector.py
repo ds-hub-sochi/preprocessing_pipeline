@@ -17,6 +17,8 @@ class MarkupCollector:
             if task.uid == task_id:
                 return task
 
+        return None
+
     async def get_task_markup(
         self,
         organization_id: str,
