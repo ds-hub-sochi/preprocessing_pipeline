@@ -22,7 +22,7 @@ def get_style() -> str:
     return style
 
 
-def main():
+def main():  # pylint: disable=too-many-locals
     st.markdown(get_style(), unsafe_allow_html=True)
 
     crowd_cfg_path: str = ''
