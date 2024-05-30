@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import Tuple
 
 import asyncio
 import pathlib
@@ -141,7 +140,7 @@ def main():
             if st.button('Получить разметку'):
                 murkup_collector: MarkupCollector = MarkupCollector(crowd_cfg_path)
 
-                results_str: str | Tuple[str, str] = asyncio.run(
+                results_str: str | tuple[str, str] = asyncio.run(
                     murkup_collector.get_task_markup(
                         organization_id=organization_id,
                         project_id=project_id,
