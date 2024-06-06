@@ -9,7 +9,7 @@ from src.preprocessing_pipeline.s3_collectors.image_collector import S3ImagesCol
 
 
 async def upload_s3_to_tagme(bucket_name: str, folder_name: str, task_id: str, organization_id: str) -> None:
-    try:
+    try:  # ignore: pylint[too-many-try-statements]
         client: TagmeClientAdvanced = TagmeClientAdvanced()
 
         crowd_cfg_path: str = str(pathlib.Path.home().joinpath('.crowd.cfg'))
@@ -36,8 +36,5 @@ async def upload_s3_to_tagme(bucket_name: str, folder_name: str, task_id: str, o
                 writer.writerow({'INPUT:image': sample['INPUT:image'], 'FILENAME': sample['FILENAME']})
 
         await client.upload_table(task_id, csv_file_path, delimeter=',', organization_id=organization_id)
-    except Exception as e:
-        error = f'Ошибка при загрузке файла S3: {str(e)}'
-        print(error)
     except SystemExit:
         pass

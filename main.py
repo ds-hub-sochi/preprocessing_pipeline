@@ -250,10 +250,12 @@ def main():  # pylint: disable=too-many-locals
         )
 
         if all(
-            st.session_state.organization_id != '',
-            st.session_state.project_id != '',
-            task_id != '',
-            dump_dir != '',
+            [
+                st.session_state.organization_id != '',
+                st.session_state.project_id != '',
+                task_id != '',
+                dump_dir != '',
+            ],
         ):
             dump_dir = os.path.abspath(dump_dir)
             pathlib.Path(dump_dir).mkdir(parents=True, exist_ok=True)
