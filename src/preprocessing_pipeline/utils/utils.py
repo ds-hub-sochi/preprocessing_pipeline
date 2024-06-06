@@ -9,7 +9,7 @@ from src.preprocessing_pipeline.s3_collectors.image_collector import S3ImagesCol
 
 
 async def upload_s3_to_tagme(bucket_name: str, folder_name: str, task_id: str, organization_id: str) -> None:
-    try:  # pylint: too-many-try-statements
+    try:  # pylint: disable=too-many-try-statements
         client: TagmeClientAdvanced = TagmeClientAdvanced()
 
         crowd_cfg_path: str = str(pathlib.Path.home().joinpath('.crowd.cfg'))
