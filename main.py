@@ -26,7 +26,7 @@ def get_style() -> str:
     return style
 
 
-def main():  # pylint: disable=too-many-locals
+def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-statements]
     st.markdown(get_style(), unsafe_allow_html=True)
 
     tabs = st.tabs(
