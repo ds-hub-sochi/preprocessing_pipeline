@@ -3,7 +3,6 @@ from __future__ import annotations
 import pathlib
 from dataclasses import dataclass
 from io import BytesIO
-from urllib.parse import quote
 
 import boto3
 import numpy as np
@@ -75,9 +74,19 @@ class S3ImagesCollector:
                 continue
 
             name: str = file[0]
-            folder: str = quote(f'{bucket_name}/{folder_name}/{name}')
+            # folder: str = quote(f'{bucket_name}/{folder_name}/{name}')
+            # url: str = f'{self._config.cloud.endpoint}/{folder}'
+            # in the case we use just url here it won't work: images will not be displayed on the tagme platform
+            # So it's neceser to use this kind of urls
+            url = self._s3_client_boto.generate_presigned_url(
+                'get_object',
+                Params={
+                    'Bucket': bucket_name,
+                    'Key': file[1],
+                },
+                ExpiresIn=604800,  # one week, which is maximum duration here
+            )
 
-            url: str = f'{self._config.cloud.endpoint}/{folder}'
             url_and_filename_dct['INPUT:image'].append(url)
             url_and_filename_dct['FILENAME'].append(name)
             url_and_filename_dct['Full_path'].append(file[1])
