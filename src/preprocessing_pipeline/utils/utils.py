@@ -43,13 +43,17 @@ async def upload_s3_to_tagme(bucket_name: str, folder_name: str, task_id: str, o
         pass
 
 
-def df_to_tagme_json(path_to_aggregation_df: str, path_to_tagme_json: str, dump_dir: str):
+def df_to_tagme_json(
+    path_to_aggregation_df: str,
+    path_to_tagme_json: str,
+    dump_dir: str,
+):  # pylint: disable=[too-many-locals]
     aggregation_df: pd.DataFrame = pd.read_csv(path_to_aggregation_df)
 
     with open(path_to_tagme_json, 'r', encoding='utf-8') as json_path:
         tagme_markup = json.load(json_path)
 
-    filename_and_marker_id2markup: dict[tuple[str, str], typing.Any] = dict()
+    filename_and_marker_id2markup: dict[tuple[str, str], typing.Any] = {}
 
     for sample in tagme_markup:
         filename_and_marker_id2markup[(sample['file_name'], sample['marker_id'])] = sample
@@ -84,7 +88,7 @@ def df_to_tagme_json(path_to_aggregation_df: str, path_to_tagme_json: str, dump_
 
         original_markup = filename_and_marker_id2markup[(task, marker_id)]
 
-        current_markup = dict()
+        current_markup = {}
 
         current_markup['result'] = {'marks': marks}
 
@@ -94,7 +98,7 @@ def df_to_tagme_json(path_to_aggregation_df: str, path_to_tagme_json: str, dump_
 
         result_json.append(current_markup)
 
-    with open(f'{dump_dir}/aggragation_in_tagme_format.json', 'w') as outfile:
+    with open(f'{dump_dir}/aggragation_in_tagme_format.json', 'w', encoding='utf-8') as outfile:
         json.dump(result_json, outfile)
 
 

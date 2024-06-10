@@ -9,6 +9,7 @@ coverage
 crowd_sdk-3.11.0.post18-py3-none-any.whl
 flake8
 numpy
+opencv-python
 Pillow
 pre-commit==3.0.4
 pytest
