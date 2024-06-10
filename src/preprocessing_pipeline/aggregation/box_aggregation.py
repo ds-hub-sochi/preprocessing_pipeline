@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
-import os.path
 import pathlib
 import typing
 from collections import Counter
@@ -43,13 +41,13 @@ class Answer:
 class BoxAggregator:
     def __init__(
         self,
-        path_to_images_dir: str | pathlib.Path,
-        path_to_wrong_cases_dir: str | pathlib.Path,
+        path_to_images_dir: str,
+        path_to_wrong_cases_dir: str,
         images_dir_structure: str = 'nested',
         tagme_markup_structure: str = 'nested',
     ):
-        self.path_to_images_dir: str | pathlib.Path = os.path.abspath(path_to_images_dir)
-        self.path_to_wrong_cases_dir: str | pathlib.Path = os.path.abspath(path_to_wrong_cases_dir)
+        self.path_to_images_dir: str = path_to_images_dir
+        self.path_to_wrong_cases_dir: str = path_to_wrong_cases_dir
         self.images_dir_structure: str = images_dir_structure
         self.tagme_markup_structure: str = tagme_markup_structure
 

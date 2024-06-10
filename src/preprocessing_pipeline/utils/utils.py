@@ -99,6 +99,8 @@ def df_to_tagme_json(
     with open(f'{dump_dir}/aggragation_in_tagme_format.json', 'w', encoding='utf-8') as outfile:
         json.dump(result_json, outfile)
 
+    return f'{dump_dir}/aggragation_in_tagme_format.json'
+
 
 def draw_markup(
     path_to_tagme_json,
@@ -132,6 +134,32 @@ def draw_markup(
 
             image = cv2.rectangle(image, (x, y), (x + w, y + h), color, 3)
             cv2.putText(image, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
+
+        pathlib.Path(f'{dump_dir}').mkdir(parents=True, exist_ok=True)
+
+        cv2.imwrite(f'{dump_dir}/{filename}', image)
+
+
+def save_valid_images(
+    path_to_tagme_json,
+    images_dir,
+    dump_dir,
+    images_dir_structure: str,
+    tagme_markup_structure: str,
+):
+    with open(path_to_tagme_json, 'r', encoding='utf-8') as markup_file:
+        markup = json.load(markup_file)
+
+    for sample in markup:
+        filename = sample['file_name']
+
+        if images_dir_structure != tagme_markup_structure:
+            if images_dir_structure == 'nested':
+                image = cv2.imread(f'{images_dir}/{filename.replace("_", "/")}')
+            else:
+                image = cv2.imread(f'{images_dir}/{filename.replace("/", "_")}')
+        else:
+            image = cv2.imread(f'{images_dir}/{filename}')
 
         pathlib.Path(f'{dump_dir}').mkdir(parents=True, exist_ok=True)
 
