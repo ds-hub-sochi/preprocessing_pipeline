@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import json
 import os
 import os.path
 import pathlib
 import typing
-import typing as tp
 from collections import Counter
 from dataclasses import dataclass
 
@@ -28,7 +29,7 @@ class Answer:
     position: Bbox
 
     def __post_init__(self):
-        self.position = Bbox(**self.position)
+        self.position = Bbox(**self.position)  # pyling: disable=[not-a-mapping]
 
     def position_to_dict(self) -> dict[str, int]:
         return {
@@ -80,7 +81,7 @@ class BoxAggregator:
     def filter_markup_by_label(
         self,
         markup_json: dict[str, typing.Any],
-    ) -> dict[str, tp.Any]:
+    ) -> dict[str, typing.Any]:
         markup_with_filtered_labels = []
 
         bad_markup: dict[str, list[str]] = {
@@ -104,8 +105,7 @@ class BoxAggregator:
                         if mark['entityId'] == 'mistake':
                             got_mistake = True
                             continue
-                        else:
-                            correct_marks.append(mark)
+                        correct_marks.append(mark)
                 if len(correct_marks) != 0:
                     markup_with_filtered_labels.append(sample)
                     markup_with_filtered_labels[-1]['result']['marks'] = correct_marks
@@ -122,7 +122,7 @@ class BoxAggregator:
         markup_with_filtered_labels: dict[str, typing.Any],
         bbox_minimal_relative_size: float = 0.005,
     ):
-        markers_predictions: dict[str, dict[str, list[Answer]]] = dict()
+        markers_predictions: dict[str, dict[str, list[Answer]]] = {}
         wrond_bboxes: dict[str, list[str]] = {
             'filepath': [],
             'marker_id': [],
@@ -138,7 +138,7 @@ class BoxAggregator:
 
             if 'result' in sample:
                 if filename not in markers_predictions:
-                    markers_predictions[filename] = dict()
+                    markers_predictions[filename] = {}
 
                 if current_marker_id not in markers_predictions[filename]:
                     markers_predictions[filename][current_marker_id] = []
@@ -182,7 +182,7 @@ class BoxAggregator:
 
         return markers_predictions
 
-    def filter_markup_by_consistency(
+    def filter_markup_by_consistency(  # pylint: disable=[too-many-locals,too-many-statements]
         self,
         markers_predictions: dict[str, typing.Any],
         bbox_relative_error: float = 0.01,
