@@ -4,9 +4,9 @@ import os
 import pathlib
 import typing
 
-import cv2
 import pandas as pd
 from crowd_sdk.tagme import TagmeClientAdvanced
+from cv2 import cv2
 
 from src.preprocessing_pipeline.s3_collectors.image_collector import S3ImagesCollector
 
