@@ -568,7 +568,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                         )
                         st.write('Агрегация боксов завершена')
 
-                        st.session_state.aggregation_df = aggregation_df
+                        st.session_state.aggregation_df = aggregation_df  # pylint: disable=redefined-variable-type
             elif operation_type == 'Агрегация лейблов':
                 aggregator_type: str = st.selectbox(
                     label='Алгоритм агрегации ',
@@ -613,7 +613,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
 
                         st.write(f'Разметка в формате csv сохранена в {str(checkpoint)}')
 
-                        st.session_state.aggregation_df_checkpoint = checkpoint
+                        st.session_state.aggregation_df_checkpoint = str(checkpoint)
             elif operation_type == 'Сохранить разметку в формате TagMe':
                 markup_dump_path: str = st.text_input(
                     label='Путь до разметки из TagMe',
