@@ -29,7 +29,7 @@ class Answer:
     position: Bbox
 
     def __post_init__(self):
-        self.position = Bbox(**self.position)  # pyling: disable=not-a-mapping
+        self.position = Bbox(**self.position)  # pylint: disable=[not-a-mapping]
 
     def position_to_dict(self) -> dict[str, int]:
         return {
