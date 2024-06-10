@@ -4,9 +4,9 @@ import os
 import pathlib
 import typing
 
-import cv2
 import pandas as pd
 from crowd_sdk.tagme import TagmeClientAdvanced
+from cv2 import cv2
 
 from src.preprocessing_pipeline.s3_collectors.image_collector import S3ImagesCollector
 
@@ -88,9 +88,7 @@ def df_to_tagme_json(
 
         original_markup = filename_and_marker_id2markup[(task, marker_id)]
 
-        current_markup = {}
-
-        current_markup['result'] = {'marks': marks}
+        current_markup = {'result': {'marks': marks}}
 
         for key in list(original_markup.keys()):
             if key != 'result':
