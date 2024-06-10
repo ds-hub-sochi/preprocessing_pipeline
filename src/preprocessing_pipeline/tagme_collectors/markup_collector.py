@@ -24,7 +24,7 @@ class MarkupCollector:
         project_id: str,
         task_id: str,
         dump_dir: str,
-    ) -> str:
+    ) -> tuple[str, str]:
         await self._tagme_client.set_organization(organization_id)
         tasks = await self._tagme_client.get_tasks(project_id=project_id)
 
@@ -71,4 +71,4 @@ class MarkupCollector:
 
         result_str += f'Разметка сохранена в {dump_file_path}'
 
-        return result_str
+        return result_str, dump_file_path
