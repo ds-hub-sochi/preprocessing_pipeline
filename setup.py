@@ -5,6 +5,6 @@ setup(
     packages=find_packages(),
     version='0.1.0',
     description='This repository is a template structure for new projects',
-    author='ds-hub-sochi',
+    author='Nikolai Makrov @ ds-hub-sochi',
     license='',
 )
