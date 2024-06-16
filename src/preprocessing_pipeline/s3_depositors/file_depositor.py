@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import os
 import pathlib
 from dataclasses import dataclass
+from glob import glob
 
 import boto3
 import yaml
 from crowd_sdk.cloud import Clouds
+from tqdm import tqdm
 
 
 @dataclass
@@ -81,7 +84,7 @@ class S3FileDepositor:
         self,
         s3_bucket_name: str,
         s3_filepath: str,
-    ):
+    ) -> None:
         s3_resource: boto3.resource = boto3.resource(
             's3',
             endpoint_url=self._config.cloud.endpoint,
@@ -91,3 +94,31 @@ class S3FileDepositor:
 
         bucket = s3_resource.Bucket(s3_bucket_name)
         bucket.objects.filter(Prefix=s3_filepath).delete()
+
+    def deposite_folder(
+        self,
+        s3_bucket_name: str,
+        s3_folder_name: str,
+        dirpath: str | pathlib.Path,
+    ) -> None:
+        prefix_len: int = len(os.path.abspath(dirpath))
+
+        dir_files: list[str] = glob(f'{os.path.abspath(dirpath)}/*.*')
+
+        if len(dir_files) == 0:
+            dir_files = glob(f'{os.path.abspath(dirpath)}/*/*.*')
+
+        for filepath in tqdm(dir_files):
+            filename: str = filepath[prefix_len + 1 :]
+
+            s3_resource: boto3.resource = boto3.resource(
+                's3',
+                endpoint_url=self._config.cloud.endpoint,
+                aws_access_key_id=self._config.cloud.key,
+                aws_secret_access_key=self._config.cloud.secret,
+            )
+
+            s3_resource.Bucket(s3_bucket_name).upload_file(
+                filepath,
+                str(pathlib.Path(s3_folder_name).joinpath(filename)),
+            )
