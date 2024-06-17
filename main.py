@@ -40,7 +40,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
             'Выгрузка изображений из S3',
             'Отправление в S3',
             'Выгрузка разметки из TagMe',
-            'Создание задачи в TagMe',
+            'Работа с задачами в TagMe',
             'Агрегация разметки',
             'Работа с результатами разметки',
         ],
@@ -226,6 +226,9 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                     st.write(f'Создан проект с id {project_id}')
                     st.write('Пожалуйста, назначьте разметчиков:')
                     st.write(f'https://tagme.sberdevices.ru/company/{organization_id}/project/{project_id}/groups')
+
+                    st.write('Пожалуйста, добавьте инструкцию на сайте:')
+                    st.write(f'https://tagme.sberdevices.ru/company/{organization_id}/project/{project_id}/brief')
 
     with tabs[1]:
         bucket: str = st.text_input(
