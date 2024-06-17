@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import os
 import pathlib
+import shutil
 
 import pandas as pd
 import streamlit as st
@@ -39,7 +40,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
             'Выгрузка изображений из S3',
             'Отправление в S3',
             'Выгрузка разметки из TagMe',
-            'Создание задачи в TagMe',
+            'Работа с задачами в TagMe',
             'Агрегация разметки',
             'Работа с результатами разметки',
         ],
@@ -70,12 +71,6 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
     if 'last_task_id' not in st.session_state:
         st.session_state.last_task_id = ''
 
-    if 'tagme_markup_structure' not in st.session_state:
-        st.session_state.tagme_markup_structure = ''
-
-    if 'images_dir_structure' not in st.session_state:
-        st.session_state.images_dir_structure = ''
-
     if 'aggregation_df' not in st.session_state:
         st.session_state.aggregation_df = ''
 
@@ -91,11 +86,15 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
     if 'saved_images_dir' not in st.session_state:
         st.session_state.saved_images_dir = ''
 
+    if 'wrong_cases_dir' not in st.session_state:
+        st.session_state.wrong_cases_dir = ''
+
+    temp_dir: str = './tmp'
+    pathlib.Path.mkdir(pathlib.Path(os.path.abspath(temp_dir)), parents=True, exist_ok=True)
+
     key: int = 1
 
     with tabs[0]:
-        st.header('Конфигурация проекта')
-
         organization_id: str = st.text_input(
             label='id организации',
             value='',
@@ -115,15 +114,15 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
         operation_type: str = st.selectbox(
             label='Проект:',
             options=(
-                'Использовать существующий',
-                'Создать новый',
+                'Использовать существующий проект',
+                'Создать новый проект',
             ),
             index=None,
             key=key,
         )
         key += 1
 
-        if operation_type == 'Использовать существующий':
+        if operation_type == 'Использовать существующий проект':
             project_id: str = st.text_input(
                 label='id проекта',
                 value='',
@@ -132,7 +131,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
             key += 1
 
             st.session_state.project_id = project_id
-        elif operation_type == 'Создать новый':
+        elif operation_type == 'Создать новый проект':
             project_name = st.text_input(
                 label='Название проекта',
                 value='',
@@ -149,7 +148,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
 
             labels_str: str = st.text_input(
                 label='Перечислите классы, которые есть на фото, через запятую',
-                help='Например, "tiger,human,other"',
+                help='Например, "tiger,human,other,empty"',
                 key=key,
             )
             key += 1
@@ -164,10 +163,6 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
             )
             key += 1
 
-            config_files_dir_path = os.path.abspath(config_files_dir_path)
-
-            # overlap: str = st.text_input(label='Укажите размер перекрытия', value=1, help='Должно быть целвым числом')
-
             if all(
                 [
                     project_name != '',
@@ -176,6 +171,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                 ],
             ):
                 if st.button('Создать проект'):
+                    config_files_dir_path = os.path.abspath(config_files_dir_path)
                     entities: list[dict[str, str]] = []
 
                     for label in labels_lst:
@@ -184,17 +180,9 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                                 'id': label,
                                 'name': label,
                                 'tool': 'bbox',
+                                'color': 'blue' if label != 'empty' else 'red',
                             },
                         )
-
-                    entities.append(
-                        {
-                            'id': 'empty',
-                            'name': 'empty',
-                            'tool': 'bbox',
-                            'color': 'red',
-                        },
-                    )
 
                     __config = {
                         'type': 'segmentation',
@@ -209,16 +197,19 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                         'entities': entities,
                     }
 
+                    pathlib.Path.mkdir('./stub_dir', parents=True, exist_ok=True)
+
                     _config = ProjectConfig(
                         css=f'{config_files_dir_path}/config_css.css',
                         html=f'{config_files_dir_path}/config_html.html',
                         javascript=f'{config_files_dir_path}/config_js.js',
+                        # instruction=f'{config_files_dir_path}/config_instruction.html',
                         instruction=f'{config_files_dir_path}/config_instruction.txt',
                         overlap=1,
                         project_name=project_name,
                         description=project_description,
                         config=__config,
-                        data_dir='./tmp',
+                        data_dir='./stub_dir',
                         example=f'{config_files_dir_path}/config_json.json',
                     )
 
@@ -228,18 +219,20 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                             config=_config,
                         ),
                     )
-
                     st.session_state.project_id = project_id
+
+                    shutil.rmtree('./stub_dir')
 
                     st.write(f'Создан проект с id {project_id}')
                     st.write('Пожалуйста, назначьте разметчиков:')
                     st.write(f'https://tagme.sberdevices.ru/company/{organization_id}/project/{project_id}/groups')
 
-    with tabs[1]:
-        st.header('Выгрузка изображений из S3')
+                    st.write('Пожалуйста, добавьте инструкцию на сайте:')
+                    st.write(f'https://tagme.sberdevices.ru/company/{organization_id}/project/{project_id}/brief')
 
+    with tabs[1]:
         bucket: str = st.text_input(
-            label='Bucket на S3',
+            label='Бакет на S3',
             value='',
             key=key,
         )
@@ -252,70 +245,115 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
         )
         key += 1
 
-        dump_dir: str = st.text_input(
+        images_dump_dir: str = st.text_input(
             label='Абсолютный или относительный путь до директории для сохранения',
             value='',
             help='Относительно той директории, откуда запущен скрипт',
             key=key,
         )
-        st.session_state.images_dump_dir = dump_dir
+        st.session_state.images_dump_dir = images_dump_dir
         key += 1
 
-        if dump_dir != '' and data_dir != '' and bucket != '':
+        if images_dump_dir != '' and data_dir != '' and bucket != '':
             if st.button('Забрать изображения'):
-                dump_dir = os.path.abspath(dump_dir)
+                images_dump_dir = os.path.abspath(images_dump_dir)
+                pathlib.Path.mkdir(images_dump_dir, parents=True, exist_ok=True)
 
                 s3_image_collector.get_and_save_images(
                     s3_folder_name=data_dir,
                     s3_bucket_name=bucket,
-                    dump_folder_name=dump_dir,
+                    dump_folder_name=images_dump_dir,
                 )
 
     with tabs[2]:
         s3_bucket_name: str = st.text_input(
-            label='Имя бакета на S3',
+            label='Бакет на S3',
             value='',
             key=key,
         )
         key += 1
 
         s3_dump_dir: str = st.text_input(
-            label='Директория на S3 для сохранения файла',
+            label='Директория на S3 для сохранения',
             value='',
             key=key,
         )
         key += 1
 
-        filepath: str = st.text_input(
-            label='Абсолютный или относительный* путь до файла, который нужно отправить на S3',
-            help='Относительно той директории, откуда запущен скрипт',
-            value='',
+        operation_type: str = st.selectbox(
+            label='Что нужно отправить',
+            options=(
+                'Один файл',
+                'Всю папку',
+            ),
+            index=None,
             key=key,
         )
         key += 1
 
-        if s3_bucket_name != '' and s3_dump_dir != '' and filepath != '':
-            if st.button('Отправить'):
-                filepath = os.path.abspath(filepath)
+        if operation_type == 'Один файл':
+            filepath: str = st.text_input(
+                label='Абсолютный или относительный* путь до файла, который нужно отправить на S3',
+                help='Относительно той директории, откуда запущен скрипт',
+                value='',
+                key=key,
+            )
+            key += 1
 
-                s3_file_depositor.deposit_file(
-                    s3_bucket_name=s3_bucket_name,
-                    s3_folder_name=s3_dump_dir,
-                    filepath=filepath,
-                )
+            if all(
+                [
+                    s3_bucket_name != '',
+                    s3_dump_dir != '',
+                    filepath != '',
+                ],
+            ):
+                if st.button('Отправить'):
+                    filepath = os.path.abspath(filepath)
 
-                st.write(f'Файл {filepath} отправлен на S3')
+                    s3_file_depositor.deposit_file(
+                        s3_bucket_name=s3_bucket_name,
+                        s3_folder_name=s3_dump_dir,
+                        filepath=filepath,
+                    )
+
+                    st.write(f'Файл {filepath} отправлен на S3')
+        elif operation_type == 'Всю папку':
+            dirpath: str = st.text_input(
+                label='Абсолютный или относительный* путь до папки, которую нужно отправить на S3',
+                help='Относительно той директории, откуда запущен скрипт',
+                value='',
+                key=key,
+            )
+            key += 1
+
+            if all(
+                [
+                    s3_bucket_name != '',
+                    s3_dump_dir != '',
+                    dirpath != '',
+                ],
+            ):
+                if st.button('Отправить'):
+                    s3_file_depositor.deposite_folder(
+                        s3_bucket_name=s3_bucket_name,
+                        s3_folder_name=s3_dump_dir,
+                        dirpath=dirpath,
+                    )
+
+                    st.write('Файлы успешно отправлены')
 
     with tabs[3]:
         task_id: str = st.text_input(
             label='id задания',
-            value='',
+            value=st.session_state.last_task_id,
             key=key,
         )
         key += 1
 
+        st.session_state.last_task_id = task_id
+
         dump_dir: str = st.text_input(
-            label='Абсолютный или относительный* путь до директории для скачивания',
+            label='Абсолютный или относительный* путь до директории для сохранения разметки',
             help='Относительно той директории, откуда запущен скрипт',
             value='',
             key=key,
@@ -324,8 +362,8 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
 
         if all(
             [
-                st.session_state.organization_id is not None,
-                st.session_state.project_id is not None,
+                st.session_state.organization_id != '',
+                st.session_state.project_id != '',
                 task_id != '',
                 dump_dir != '',
             ],
@@ -347,7 +385,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                 st.session_state.markup_dump_path = str(pathlib.Path(dump_dir).joinpath(results[1]))
 
     with tabs[4]:
-        task_data = None
+        # task_data = None
         operation_type: str = st.selectbox(
             label='Тип операции',
             options=(
@@ -379,8 +417,9 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
             if all(
                 [
                     task_name != '',
-                    st.session_state.project_id is not None,
-                    st.session_state.organization_id is not None,
+                    st.session_state.person_id != '',
+                    st.session_state.project_id != '',
+                    st.session_state.organization_id != '',
                 ],
             ):
                 if st.button('Создать задачу'):
@@ -390,7 +429,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                             project_id=st.session_state.project_id,
                             organization_id=st.session_state.organization_id,
                             overlap=overlap,
-                            person_id=person_id,
+                            person_id=st.session_state.person_id,
                         ),
                     )
 
@@ -407,7 +446,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
             key += 1
 
             folder_name: str = st.text_input(
-                label='Папка с данными в бакете',
+                label='Директория с данными на S3',
                 value='',
                 key=key,
             )
@@ -425,7 +464,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                     bucket_name != '',
                     folder_name != '',
                     task_id != '',
-                    st.session_state.organization_id is not None,
+                    st.session_state.organization_id != '',
                 ],
             ):
                 if st.button('Загрузить данные в TagMe'):
@@ -467,18 +506,15 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
             key=key,
         )
         key += 1
+        st.session_state.images_dump_dir = path_to_images_dir
 
-        path_to_wrong_cases_dir = st.text_input(
-            label='Абсолютный или относительный путь до директории, в которой храняться невалидные случаи',
-            help='Например, слишком узкие или несогласованные боксы',
-            value='',
+        wrong_cases_dir = st.text_input(
+            label='Путь до директории, в которую храняться невалидные случаи',
+            value=st.session_state.wrong_cases_dir,
             key=key,
         )
         key += 1
-
-        if path_to_wrong_cases_dir is not None:
-            path_to_wrong_cases_dir = os.path.abspath(path_to_wrong_cases_dir)
-            pathlib.Path(path_to_wrong_cases_dir).mkdir(parents=True, exist_ok=True)
+        st.session_state.wrong_cases_dir = wrong_cases_dir
 
         images_dir_structure: str = st.selectbox(
             label='Структура директории с изображениями',
@@ -486,31 +522,28 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                 'nested',
                 'flat',
             ),
-            help='flat, если структура плоская; nested, если структура вложенная;',
+            help='flat, если структура плоская: F_1_IMG1.JPG; nested, если структура вложенная: F_1/IMG1.JPG;',
             index=None,
             key=key,
         )
         key += 1
 
-        st.session_state.images_dir_structure = images_dir_structure
-
         tagme_markup_structure: str = st.selectbox(
-            label='Структура размекти ',
+            label='Структура разметки',
             options=(
                 'nested',
                 'flat',
             ),
-            help='flat, если структура плоская; nested, если структура вложенная;',
+            help='flat, если структура плоская: F_1_IMG1.JPG; nested, если структура вложенная: F_1/IMG1.JPG;',
             index=None,
             key=key,
         )
         key += 1
 
-        st.session_state.tagme_markup_structure = tagme_markup_structure
-
         if all(
             [
                 path_to_images_dir != '',
+                st.session_state.wrong_cases_dir != '',
                 images_dir_structure is not None,
                 tagme_markup_structure is not None,
             ],
@@ -528,24 +561,30 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
             key += 1
 
             if operation_type == 'Агрегация боксов':
+                pathlib.Path.mkdir(
+                    pathlib.Path(os.path.abspath(st.session_state.wrong_cases_dir)),
+                    parents=True,
+                    exist_ok=True,
+                )
+
                 box_aggregator: BoxAggregator = BoxAggregator(
                     path_to_images_dir=path_to_images_dir,
-                    path_to_wrong_cases_dir=path_to_wrong_cases_dir,
+                    path_to_wrong_cases_dir=os.path.abspath(st.session_state.wrong_cases_dir),
                     images_dir_structure=images_dir_structure,
                     tagme_markup_structure=tagme_markup_structure,
                 )
 
                 bbox_minimal_relative_size: str = st.text_input(
                     label='Минимальная длина одной из сторон бокса в долях от размера изображения',
-                    value=0.005,
+                    value='0.005',
                     help='Боксы меньше размера будут отброшены. Должно быть действительным число от 0 до 1',
                     key=key,
                 )
                 key += 1
 
                 bbox_relative_error: str = st.text_input(
-                    label='Минимальное в долях от размера изображения расстояние между центрами боксов',
-                    value=0.01,
+                    label='Минимальное в долях от размера изображения расстояние между центрами боксов (bandwidth)',
+                    value='0.01',
                     help='Должно быть действительным число от 0 до 1',
                     key=key,
                 )
@@ -558,6 +597,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                     key=key,
                 )
                 key += 1
+                st.session_state.markup_dump_path = path_to_markup
 
                 if path_to_markup != '':
                     if st.button('Агрегировать боксы'):
@@ -568,7 +608,11 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                         )
                         st.write('Агрегация боксов завершена')
 
-                        st.session_state.aggregation_df = aggregation_df  # pylint: disable=redefined-variable-type
+                        aggregation_df_dump_path: str = temp_dir + '/aggregation_df.csv'
+                        aggregation_df.to_csv(os.path.abspath(aggregation_df_dump_path))
+
+                        # st.session_state.aggregation_df = aggregation_df  # pylint: disable=redefined-variable-type
+                        st.session_state.aggregation_df = aggregation_df_dump_path
             elif operation_type == 'Агрегация лейблов':
                 aggregator_type: str = st.selectbox(
                     label='Алгоритм агрегации ',
@@ -599,19 +643,48 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
 
                 if checkpoint_dir != '':
                     if st.button('Агрегировать лейблы'):
+                        aggregation_df = pd.read_csv(st.session_state.aggregation_df, index_col=0)
+
                         aggregated_labels_df: pd.DataFrame = label_aggregator.fit_predict(
-                            data=st.session_state.aggregation_df,
+                            data=aggregation_df,
                         )
                         st.write('Агрегация лейблов завершена')
 
-                        result_df = st.session_state.aggregation_df.merge(aggregated_labels_df, on=['subtask'])
+                        result_df = aggregation_df.merge(aggregated_labels_df, on=['subtask'])
 
-                        checkpoint: pathlib.Path = pathlib.Path(st.session_state.markup_checkpoint_dir).joinpath(
-                            'aggregated_results.csv',
+                        consistent_data: pd.DataFrame = pd.DataFrame(columns=result_df.columns)
+                        inconsistent_data: pd.DataFrame = pd.DataFrame(columns=result_df.columns)
+
+                        unique_task_id: list[str] = list(set(result_df['task']))
+
+                        for task_id in unique_task_id:
+                            current_task_data: pd.DataFrame = result_df[result_df['task'] == task_id]
+
+                            current_unique_subtask_id = list(set(current_task_data['subtask']))
+
+                            current_subtask_data = current_task_data[
+                                current_task_data['subtask'] == current_unique_subtask_id
+                            ]
+
+                            consistent_subtask_markup: pd.DataFrame = current_subtask_data[
+                                current_subtask_data['label'] == current_subtask_data['aggregated_label']
+                            ]
+
+                            inconsistent_subtask_markup: pd.DataFrame = current_subtask_data[
+                                current_subtask_data['label'] != current_subtask_data['aggregated_label']
+                            ]
+
+                            consistent_data = pd.concat([consistent_data, consistent_subtask_markup])
+                            inconsistent_data = pd.concat([inconsistent_data, inconsistent_subtask_markup])
+
+                        inconsistent_data.to_csv(os.path.abspath(wrong_cases_dir) + '/inconsistent_markup.csv')
+
+                        checkpoint: str = (
+                            os.path.abspath(st.session_state.markup_checkpoint_dir) + '/consistent_markup.csv'
                         )
-                        result_df.to_csv(checkpoint)
 
-                        st.write(f'Разметка в формате csv сохранена в {str(checkpoint)}')
+                        result_df.to_csv(checkpoint)
+                        st.write(f'Разметка в формате csv сохранена в {checkpoint}')
 
                         st.session_state.aggregation_df_checkpoint = str(checkpoint)
             elif operation_type == 'Сохранить разметку в формате TagMe':
@@ -621,6 +694,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                     key=key,
                 )
                 key += 1
+                st.session_state.markup_dump_path = markup_dump_path
 
                 aggregated_markup_path: str = st.text_input(
                     label='Путь до агрегированной разметки',
@@ -628,6 +702,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                     key=key,
                 )
                 key += 1
+                st.session_state.aggregation_df_checkpoint = aggregated_markup_path
 
                 dump_dir: str = st.text_input(
                     label='Путь до директории, в которую нужно сохранить результат',
@@ -635,10 +710,10 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                     key=key,
                 )
                 key += 1
+                st.session_state.markup_checkpoint_dir = dump_dir
 
-                if dump_dir is not None:
-                    dump_dir = os.path.abspath(dump_dir)
-                    pathlib.Path(dump_dir).mkdir(parents=True, exist_ok=True)
+                if dump_dir != '':
+                    pathlib.Path(os.path.abspath(dump_dir)).mkdir(parents=True, exist_ok=True)
 
                 if all(
                     [
@@ -649,12 +724,12 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                 ):
                     if st.button('Преобразовать в формат TagMe'):
                         dump_path: str = utils.df_to_tagme_json(
-                            aggregated_markup_path,
-                            markup_dump_path,
-                            dump_dir,
+                            os.path.abspath(aggregated_markup_path),
+                            os.path.abspath(markup_dump_path),
+                            os.path.abspath(dump_dir),
                         )
 
-                        st.write('Разметка преобразована.')
+                        st.write('Разметка преобразована')
                         st.write(f'Разметка в формате TagMe json схранена в {dump_path}')
 
                         st.session_state.markup_json_dump = dump_path
@@ -679,6 +754,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
             key=key,
         )
         key += 1
+        st.session_state.images_dump_dir = path_to_images_dir
 
         images_dir_structure = st.selectbox(
             label='Структура директории с изображениями',
@@ -686,19 +762,19 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                 'nested',
                 'flat',
             ),
-            help='flat, если структура плоская; nested, если структура вложенная;',
+            help='flat, если структура плоская: F_1_IMG1.JPG; nested, если структура вложенная: F_1/IMG1.JPG;',
             index=None,
             key=key,
         )
         key += 1
 
         tagme_markup_structure = st.selectbox(
-            label='Структура разметкии ',
+            label='Структура разметки',
             options=(
                 'nested',
                 'flat',
             ),
-            help='flat, если структура плоская; nested, если структура вложенная;',
+            help='flat, если структура плоская: F_1_IMG1.JPG; nested, если структура вложенная: F_1/IMG1.JPG;',
             index=None,
             key=key,
         )
@@ -710,6 +786,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
             key=key,
         )
         key += 1
+        st.session_state.markup_json_dump = aggregation_result_path
 
         if all(
             [
@@ -729,13 +806,12 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
 
                 if images_with_markup_dir != '':
                     if st.button('Нарисовать разметку'):
-                        images_with_markup_dir = os.path.abspath(images_with_markup_dir)
-                        pathlib.Path(images_with_markup_dir).mkdir(parents=True, exist_ok=True)
+                        pathlib.Path(os.path.abspath(images_with_markup_dir)).mkdir(parents=True, exist_ok=True)
 
                         utils.draw_markup(
-                            aggregation_result_path,
-                            path_to_images_dir,
-                            images_with_markup_dir,
+                            os.path.abspath(aggregation_result_path),
+                            os.path.abspath(path_to_images_dir),
+                            os.path.abspath(images_with_markup_dir),
                             images_dir_structure,
                             tagme_markup_structure,
                         )
@@ -751,15 +827,12 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
 
                 if saved_images_dir != '':
                     if st.button('Сохранить изображения'):
-                        saved_images_dir = os.path.abspath(saved_images_dir)
-                        pathlib.Path(saved_images_dir).mkdir(parents=True, exist_ok=True)
-
-                        st.session_state.saved_images_dir = saved_images_dir
+                        pathlib.Path(os.path.abspath(saved_images_dir)).mkdir(parents=True, exist_ok=True)
 
                         utils.save_valid_images(
-                            aggregation_result_path,
-                            path_to_images_dir,
-                            saved_images_dir,
+                            os.path.abspath(aggregation_result_path),
+                            os.path.abspath(path_to_images_dir),
+                            os.path.abspath(st.session_state.saved_images_dir),
                             images_dir_structure,
                             tagme_markup_structure,
                         )
@@ -772,6 +845,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                     key=key,
                 )
                 key += 1
+                st.session_state.markup_json_dump = aggregation_result_path
 
                 saved_images_dir = st.text_input(
                     label='Путь до директории, в которую нужно сохранить изображения',
@@ -779,17 +853,15 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                     key=key,
                 )
                 key += 1
+                st.session_state.saved_images_dir = saved_images_dir
 
                 wrong_cases_dir = st.text_input(
                     label='Путь до директории, в которую храняться невалидные случаи',
-                    value='',
+                    value=st.session_state.wrong_cases_dir,
                     key=key,
                 )
                 key += 1
-
-                if wrong_cases_dir is not None:
-                    wrong_cases_dir = os.path.abspath(wrong_cases_dir)
-                    pathlib.Path(wrong_cases_dir).mkdir(parents=True, exist_ok=True)
+                st.session_state.wrong_cases_dir = wrong_cases_dir
 
                 images_dir_structure = st.selectbox(
                     label='Структура директории с изображениями',
@@ -797,7 +869,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                         'nested',
                         'flat',
                     ),
-                    help='flat, если структура плоская; nested, если структура вложенная;',
+                    help='flat, если структура плоская: F_1_IMG1.JPG; nested, если структура вложенная: F_1/IMG1.JPG;',
                     index=None,
                     key=key,
                 )
@@ -809,7 +881,7 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                         'nested',
                         'flat',
                     ),
-                    help='flat, если структура плоская; nested, если структура вложенная;',
+                    help='flat, если структура плоская: F_1_IMG1.JPG; nested, если структура вложенная: F_1/IMG1.JPG;',
                     index=None,
                     key=key,
                 )
@@ -819,15 +891,15 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
                     [
                         aggregation_result_path != '',
                         saved_images_dir != '',
-                        wrong_cases_dir != '',
+                        st.session_state.wrong_cases_dir != '',
                     ],
                 ):
                     if st.button('Проверить согласованность'):
                         st.write(
                             consistency_tests.check_file_to_image(
-                                aggregation_result_path,
-                                saved_images_dir,
-                                wrong_cases_dir,
+                                os.path.abspath(aggregation_result_path),
+                                os.path.abspath(saved_images_dir),
+                                os.path.abspath(st.session_state.wrong_cases_dir),
                                 tagme_markup_structure,
                                 images_dir_structure,
                             ),
@@ -835,9 +907,9 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
 
                         st.write(
                             consistency_tests.check_image_to_file(
-                                aggregation_result_path,
-                                saved_images_dir,
-                                wrong_cases_dir,
+                                os.path.abspath(aggregation_result_path),
+                                os.path.abspath(saved_images_dir),
+                                os.path.abspath(st.session_state.wrong_cases_dir),
                                 tagme_markup_structure,
                                 images_dir_structure,
                             ),
@@ -845,17 +917,17 @@ def main():  # pylint: disable=[too-many-locals,too-many-branches,too-many-state
 
                         st.write(
                             consistency_tests.check_unique_field(
-                                aggregation_result_path,
+                                os.path.abspath(aggregation_result_path),
                                 'file_name',
-                                wrong_cases_dir,
+                                os.path.abspath(st.session_state.wrong_cases_dir),
                             ),
                         )
 
                         st.write(
                             consistency_tests.check_unique_field(
-                                aggregation_result_path,
+                                os.path.abspath(aggregation_result_path),
                                 'item_id',
-                                wrong_cases_dir,
+                                os.path.abspath(st.session_state.wrong_cases_dir),
                             ),
                         )
 

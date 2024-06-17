@@ -1,83 +1,105 @@
-# project_template
+# Описание проекта
 
-This repository is a template structure for new projects
+Этот репозиторий нужен, чтобы автоматизировать работу с TagMe.
 
-## Project Organization
+## Как установить
 
-```
-├── LICENSE
-├── Makefile                <- Makefile with commands like `make data` or `make train`
-├── README.md               <- The top-level README for developers using this project.
-├── .pre-commit-config.yaml <- Our pre-commit config file.
-├── .pylintrc               <- Our custom .pylintrc file.
-├── data
-│   ├── external            <- Data from third party sources.
-│   ├── interim             <- Intermediate data that has been transformed.
-│   ├── processed           <- The final, canonical data sets for modeling.
-│   └── raw                 <- The original, immutable data dump.
-│
-├── docs                    <- A default Sphinx project; see sphinx-doc.org for details
-│
-├── models                  <- Trained and serialized models, model predictions, or model summaries
-│
-├── notebooks               <- Jupyter notebooks. Naming convention is a number (for ordering),
-│                              the creator's initials, and a short `-` delimited description, e.g.
-│                              `1.0-jqp-initial-data-exploration`.
-│
-├── references              <- Data dictionaries, manuals, and all other explanatory materials.
-│
-├── reports                 <- Generated analysis as HTML, PDF, LaTeX, etc.
-│   └── figures             <- Generated graphics and figures to be used in reporting
-│
-├── requirements.txt        <- The requirements file for reproducing the analysis environment, e.g.
-│                              generated with `pip freeze > requirements.txt`
-│
-├── setup.py                <- makes project pip installable (pip install -e .) so src can be imported
-├── src                     <- Source code for use in this project.
-│   ├── __init__.py         <- Makes src a Python module
-│   │
-│   ├── data                <- Scripts to download or generate data
-│   │   └── make_dataset.py
-│   │
-│   ├── features            <- Scripts to turn raw data into features for modeling
-│   │   └── build_features.py
-│   │
-│   ├── models              <- Scripts to train models and then use trained models to make
-│   │   │                      predictions
-│   │   ├── predict_model.py
-│   │   └── train_model.py
-│   │
-│   └── visualization       <- Scripts to create exploratory and results oriented visualizations
-│       └── visualize.py
-│
-└── tox.ini                 <- tox file with settings for running tox; see tox.readthedocs.io
+Для начала нужно клонировать репозиторий:
+
+```bash
+git clone git@github.com:ds-hub-sochi/preprocessing_pipeline.git
 ```
 
-______________________________________________________________________
+Затем нужно установить зависимости:
 
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+```bash
+pip install -r requirements.txt
+```
 
-## Linter checks with pre-commit
+В папку юзера (~/ на Linux, C:\\Users\\username на Windows) нужно поместить файт .crowd.cfg
 
-Before committing to the remote repository, the code is checked by linters and autoformatters using the pre-commit module.
+Его структура должна быть следующая:
 
-1. The precommit is installed using a file requirements.txt , or with the command:
+```
+tagme:
+ url: https://tagme.sberdevices.ru
+ auth_url: https://tagme.sberdevices.ru
+ user: Почта от tagme аккаунта
+ password: Пароль от tagme аккаунта
+cloud:
+ main:
+  endpoint: S3 endpoint
+  key: S3 access key ID
+  secret: S3 security key
+```
 
-Using pip:
-`pip install pre-commit`
+## Как запустить
 
-Using homebrew:
-`brew install pre-commit`
+Для запуста GUI выполните:
 
-Using conda (via conda-forge):
-`conda install -c conda-forge pre-commit`
+```bash
+streamlit run main.py
+```
 
-2. To activate the pre-commit hooks, you need to have the pre-commit module installed and register the following command in the root directory of the project:
+## Структура GUI
 
-`pre-commit install`
+Интерфейс состоит из нескольких вкладок, каждая отвечает за свой функционал.
 
-After that, the check will be started automatically with `git commit`
+### 1. Конфигурация проекта
 
-It is recommended to run a pre-commit check separately before committing:
+В этой вкладке настраивается работа с проектом в TagMe.
 
-`pre-commit run --all-files`
+Здесь нужно указать id организации и ваш id пользователя (например, для Sber AI FT).
+
+Дальше в качестве рабочего проекта можно использовать уже существующий проект или создать новый проект. Если создавать проект заново, то в ручную нужно будет указать разметчиков и составить инструкцию на сайте.
+
+### 2. Выгрузка данных из S3
+
+Эта вкладка предназначена для забора данных из S3 хранилища.
+
+Нужно будет указать бакет и 'папку', которую нужно забрать к себе, а также путь к директории, куда нужно сохранить результаты.
+
+### 3. Отправление в S3
+
+Эта вкладка предназначена для выгрузки в S3 папки или отдельного файла.
+
+Нужно будет указать бакет и 'папку' на S3, в которую нужно сохранить результат, а дальше выбрать опцию: выгрузить один файл (например, результаты разметки) или целую папку (например, исходники).
+
+### 4. Выгрузка разметки из TagMe
+
+Эта вкладка предназначена для получения разметки из TagMe.
+
+Нужно будет указать id задания, чью готовую разметку вы хотите получить.
+Если разметка еще не завершена, об этом будет написано, но уже готовая размекта все равно будет получена.
+
+### 5. Работа с задачами в TagMe
+
+Эта вкладка предназначена для работы с задачами в TagMe.
+
+1. Можно настроить и создать задачу. С случае успешного создания задачи появится уведомление.
+1. Можно (до)загрузить данные в задачу. С случае успешного добавления данных появится уведомление.
+   **Важно**: TagMe ожидает url на объект, а мы храним данные на S3. В таком случае, требуется presigned url,
+   максимальный срок жизни которого - 1 неделя, дальше url протухнет.
+1. Можно запустить задачу. **Важно**: для того, чтобы задача запустилась, сначала на проект нужно назначить разметчиков.
+
+### 6. Агрегация разметки
+
+Эта вкладка предназначена для агрегации размекти.
+
+Для начала нужно указать путь до полученной разметки и исходных изображений, а также до директории, где будут храниться невалидные случаи (плохая разметка, несогласованная разметка и т.д.)
+
+Далее выполняются 3 **последовательных** шага:
+
+1. *Агрегация боксов*. На этом шаге происходит агрегация боксов по методу MeanShift. Боксы, признанные несогласованными, далее использоваться не будут. Их можно найти в файле 'wrond_bboxes.csv'.
+1. *Агрегация лейблов*. На этом шаге происходит агрегация лейблов. На выбор есть 2 метода: мнение большинства и метод Девида-Скина (номинально лучше). Лейблы, отличные от агрегированных, далее использоваться не будут. Их можно найти в файле 'inconsistent_markup.csv'.
+1. *Преобразование в TagMe json*. На этом этапе происходит преобразование разметки в формат json с сохранением структуры из TagMe. Если разметка была с перекрытием > 1, то используется усреднение боксов одного объекта среди согласованной разметки. Вспомогательные поля берутся от последнего разметчика.
+
+### 7. Работа с результатами разметки
+
+Эта вкладка предназначена для работы с результатами разметки.
+
+Можно:
+
+1. Сохранить отдельно те картинки, для которых есть финальная резметка.
+1. Сохранить картинки и нарисовать размекту, чтобы проверить ее качество глазами.
+1. Проверить согласованность разметки: для каждой картинки есть разметка, для каждой разметки есть картинка, file_name и item_id уникальные.
